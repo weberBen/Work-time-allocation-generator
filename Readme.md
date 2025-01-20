@@ -14,7 +14,7 @@ python main.py <config_file_name>
 
 You can also specify a file prefix as second argument to save the output files in a specific folder.
 
-Example of output file over 4 weeks : 
+Example of output file over 4 weeks with the following distribution `[0.0, 0.0, 0.2, 0.0, 0.3, 0.4, 0.1]` : 
 
 ![output example](./assets/output_illustration.png)
 
