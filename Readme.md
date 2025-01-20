@@ -14,7 +14,7 @@ poetry run python main.py <config_file_name>
 
 You can also specify a file prefix as second argument to save the output files in a specific folder.
 
-Example of output file over 4 weeks with the following distribution `[0.0, 0.0, 0.2, 0.0, 0.3, 0.4, 0.1]` : 
+Example of output file over 4 weeks with the following distribution `[0.0, 0.0, 0.2, 0.0, 0.3, 0.4, 0.1]`, `min_week_hours` set to 37, `max_week_hours` set to 48, `average_week_hours` set to 45 and an holiday in the first week : 
 
 ![output example](./assets/output_illustration.png)
 
@@ -63,4 +63,5 @@ poetry install
 - The final average weekly hours is not exactly the `average_week_hours` because of the rounding and the scaling down of the weeks' hours. It is also influenced by the `yearly_overtime_variance` parameter which take over the control of the final average weekly hours. Thus both parameters are interdependent and should be adjusted together.
 - The `yearly_overtime_variance` parameter is used to introduce some randomness in the yearly overtime. It is not used to control the final average weekly hours, nor the minimum yearly overtime. In fact, there is no control on the minimum yearly overtime except by tweaking the average weekly hours constraint but without fine grain control.
 - For hour contract that have a fixed number of hours per week, set `min_week_hours=max_week_hours=average_week_hours=min_week_hours`. It will generate the same number of hours per week for each week with random distribution across tasks. Then if needed manually adjust the hours to meet the minimum yearly overtime constraint (which is the only constraint that is not met).
-- You can find the legal constraints for France [here](https://www.economie.gouv.fr/entreprises/heures-supplementaires-salaries-prive)
+- Note that the final weeks' hours can be lower than the minimum week hour specified because of the holiday that impact the total workable hours.
+- You can find the legal constraints for France [here](https://www.economie.gouv.fr/entreprises/heures-supplementaires-salaries-prive).
