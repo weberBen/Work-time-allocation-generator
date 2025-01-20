@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, date
-import pandas as pd
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
