@@ -18,6 +18,8 @@ Example of output file over 4 weeks with the following distribution `[0.0, 0.0, 
 
 ![output example](./assets/output_illustration.png)
 
+Note that the output excel has embedded formula for the totals.
+
 # Options
 
 - `year`: The target year for hours allocation.
