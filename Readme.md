@@ -1,8 +1,17 @@
 # Work time allocation generator
 
-If you need to report to your company, to your client, for a project, your working hours based on a task distribution, this script is for you !
+If you need to report to your company, to your client or for a project your working hours based on a task distribution, this script is for you !
 
-Define the number of task, the associated distribution, the legal working hours constraints applicable to your company and obtain an excel file with a table of work hours for each task for each week that seems plausible and with enough diversity to generate multiple different reports for different person.
+For example, define :
+- the tasks : `Meeting`, `Research`, `Coding`, `Documentation`
+- the associated distribution : `[0.1, 0.5, 0.2, 0.2]`.
+- the legal working hours constraints applicable to your company : work hours per week between `37` and `48` with a desired week average of `45` hours. 
+- Define the period : from `01/01` (week 1) to `30/01` (week 5) in format `dd/mm`.
+- Define your holidays, leaves, ... : `01/01` at all day and `02/01` half day.
+
+And obtain an excel file with a table of work hours for each task for each week, with dynamic total formula and predefine style, that seems plausible and with enough diversity to generate multiple reports like this one :
+
+![output example](./assets/output_illustration.png)
 
 ## Usage
 
@@ -11,12 +20,6 @@ Create a config json file (see example in `config_example.json`) and then run th
 ```python
 poetry run python main.py <config_file_name>
 ```
-
-You can also specify a file prefix as second argument to save the output files in a specific folder.
-
-Example of output file over 4 weeks with the following distribution `[0.0, 0.0, 0.2, 0.0, 0.3, 0.4, 0.1]`, `min_week_hours` set to 37, `max_week_hours` set to 48, `average_week_hours` set to 45 and an holiday in the first week : 
-
-![output example](./assets/output_illustration.png)
 
 Note that the output excel has embedded formula for the totals.
 
@@ -44,6 +47,13 @@ poetry install
 - `working_days`[optional, default=5]: The list of working days per week.
 - `date_format`[optional, default="%d/%m"]: The format of the date.
 - `holidays`: The list of holidays, leaves, ... in format without the year. Concatenate `=m` to make this holiday as half day (for example `30/10=m`).
+- `csv` : CSV export config.
+  - `translations` : Text cell translations.
+    - `col.week_prefix` : Text prefix added before the week number (for example here `Week 1` the prefix is `Week ` with a space).
+    - `col.projects` : Title of the projects/tasks column.
+    - `col.total` : Text for the total cells.
+  - `file_prefix` : Path/filename prefix for the exported file, default set to `exports/` will save all csv file in the `exports` folder.
+  - `display_all_weeks` : If the selected period for the generation is less than a complete year (52 weeks), then define if the missing weeks must be included (and set with `0` as value) or not.
 
 ## Principles
 

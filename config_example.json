@@ -9,29 +9,28 @@
   "yearly_overtime_variance": 10,
   "number_working_days": 5,
   "project_names": [
-    "Task 1",
-    "Task 2",
-    "Task 3",
-    "Task 4",
-    "Task 5",
-    "Task 6",
-    "Task 7"
+    "Meeting",
+    "Research",
+    "Coding",
+    "Documentation"
   ],
-  "start_date": "01/01",
-  "end_date": "28/12",
-  "project_distribution": [0.0, 0.0, 0.2, 0.0, 0.3, 0.4, 0.1],
-  "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
   "date_format": "%d/%m",
+  "start_date": "01/01",
+  "end_date": "30/01",
+  "project_distribution": [0.1, 0.5, 0.2, 0.2],
+  "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+  "csv": {
+    "translations": {
+      "title": "Time allocation of %year% (in hours)",
+      "col.week_prefix": "Week ",
+      "col.projects": "Tasks",
+      "col.total": "Total"
+    },
+    "file_prefix": "exports/",
+    "display_all_weeks": true
+  },
   "holidays": [
     "01/01",
-    "01/04",
-    "01/05",
-    "08/05",
-    "09/05",
-    "14/07",
-    "15/08",
-    "01/11",
-    "11/11",
-    "25/12"
+    "01/02=m"
   ]
 }

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, date
 from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
 #%%
@@ -312,66 +313,117 @@ def verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_h
 
 #%%
 
-def to_excel_file(allocation_df, project_names, title="Time allocation (in hours)", week_col_prefix="W", project_col_title="Projects", file_prefix=None, display_all_weeks=True):
+def to_excel_file(allocation_df, project_names,
+                  title="Time allocation (in hours)",
+                  week_col_prefix="W",
+                  project_col_title="Projects",
+                  total_col_title="Total",
+                  file_prefix=None,
+                  display_all_weeks=True):
     # Create a new workbook and select the active sheet
     wb = Workbook()
     ws = wb.active
 
+    # Display week over the entire year even if the desired period is truncated
     if display_all_weeks:
         allocation_df = allocation_df.copy()
         num_week = 52
-        # Get min and max week numbers from existing columns
         min_week = min(allocation_df.columns)
         max_week = max(allocation_df.columns)
-        
+
         # Add missing weeks at start
         for week in range(1, min_week):
             allocation_df[week] = 0
-            
-        # Add missing weeks at end 
+
+        # Add missing weeks at end
         for week in range(max_week + 1, num_week + 1):
             allocation_df[week] = 0
-            
+
         # Sort columns by week number
         allocation_df = allocation_df.reindex(sorted(allocation_df.columns), axis=1)
 
     # Write the header
     ws['A1'] = title
+    ws['A1'].font = Font(size=14, bold=True)
+    ws['A1'].alignment = Alignment(horizontal="left", vertical="center")
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(allocation_df.columns) + 2)
+
+    ws.column_dimensions['A'].width = max([len(t) for t in project_names]) + 2
 
     # Write week numbers as column headers starting from B2
     for col, week in enumerate(allocation_df.columns, start=2):
         ws.cell(row=2, column=col, value=f"{week_col_prefix}{week}")
+        ws.cell(row=2, column=col).alignment = Alignment(horizontal="left", vertical="center")
     ws.cell(row=2, column=1, value=project_col_title)
-    ws.cell(row=2, column=len(allocation_df.columns)+2, value="Total")
+    ws.cell(row=2, column=len(allocation_df.columns) + 2, value=total_col_title)
+
+    # Style the header row
+    for col in range(1, len(allocation_df.columns) + 2):
+        ws.cell(row=2, column=col).font = Font(bold=False, italic=True)
+        ws.cell(row=2, column=col).alignment = Alignment(horizontal="center", vertical="center")
+    # row totals
+    col = len(allocation_df.columns) + 2
+    ws.cell(row=2, column=col).font = Font(bold=True, italic=False)
+    ws.cell(row=2, column=col).alignment = Alignment(horizontal="center", vertical="center")
 
     # Write project names and values
     for row, project in enumerate(allocation_df.index, start=3):
-        ws.cell(row=row, column=1, value=project_names[row-3])
+        ws.cell(row=row, column=1, value=project_names[row - 3])
+        ws.cell(row=row, column=1).alignment = Alignment(vertical="center")
+        ws.cell(row=row, column=1).font = Font(bold=False, italic=True)
         for col, value in enumerate(allocation_df.loc[project], start=2):
             ws.cell(row=row, column=col, value=value)
+            ws.cell(row=row, column=col).alignment = Alignment(horizontal="center", vertical="center")
         # Add row total formula
         last_col = get_column_letter(len(allocation_df.columns) + 1)
-        ws.cell(row=row, column=len(allocation_df.columns)+2, 
+        ws.cell(row=row, column=len(allocation_df.columns) + 2, 
                 value=f"=SUM(B{row}:{last_col}{row})")
+        ws.cell(row=row, column=len(allocation_df.columns) + 2).alignment = Alignment(horizontal="center", vertical="center")
 
     # Add "Total" row
     total_row = len(allocation_df.index) + 3
-    ws.cell(row=total_row, column=1, value="Total")
+    ws.cell(row=total_row, column=1, value=total_col_title)
+    ws.cell(row=total_row, column=1).font = Font(bold=True)
+    ws.cell(row=total_row, column=1).alignment = Alignment(horizontal="center", vertical="center")
 
     # Add column total formulas
     for col in range(2, len(allocation_df.columns) + 2):
         col_letter = get_column_letter(col)
         ws.cell(row=total_row, column=col,
-                value=f"=SUM({col_letter}3:{col_letter}{total_row-1})")
+                value=f"=SUM({col_letter}3:{col_letter}{total_row - 1})")
+        ws.cell(row=total_row, column=col).alignment = Alignment(horizontal="center", vertical="center")
 
     # Add grand total formula - sum of row totals
-    ws.cell(row=total_row, column=len(allocation_df.columns)+2,
-            value=f"=SUM({get_column_letter(len(allocation_df.columns)+2)}3:{get_column_letter(len(allocation_df.columns)+2)}{total_row-1})")
+    ws.cell(row=total_row, column=len(allocation_df.columns) + 2,
+            value=f"=SUM({get_column_letter(len(allocation_df.columns) + 2)}3:{get_column_letter(len(allocation_df.columns) + 2)}{total_row - 1})")
+    ws.cell(row=total_row, column=len(allocation_df.columns) + 2).alignment = Alignment(horizontal="center", vertical="center")
+    ws.cell(row=total_row, column=len(allocation_df.columns) + 2).font = Font(bold=True)
 
+    # Apply grey fill to the total row and column
+    grey_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+    for col in range(1, len(allocation_df.columns) + 3):
+        ws.cell(row=total_row, column=col).fill = grey_fill
+    for row in range(2, total_row + 1):
+        ws.cell(row=row, column=len(allocation_df.columns) + 2).fill = grey_fill
+
+    # Add grid lines (borders) to all cells
+    thin_border = Border(left=Side(style="thin"),
+                         right=Side(style="thin"),
+                         top=Side(style="thin"),
+                         bottom=Side(style="thin"))
+    for row in range(2, total_row + 1):
+        for col in range(1, len(allocation_df.columns) + 3):
+            ws.cell(row=row, column=col).border = thin_border
+
+    
+    # # Adjust column width
+    # for col in range(1, len(allocation_df.columns) + 3):
+    #     ws.column_dimensions[get_column_letter(col)].width = 10
+
+    # Save the workbook
     filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.xlsx"
     if file_prefix is not None:
         filename = f"{file_prefix}{filename}"
-    # Save the workbook
     wb.save(filename)
 
     return filename
