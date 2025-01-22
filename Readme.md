@@ -44,7 +44,7 @@ poetry install
 - `average_week_hours`: The desired average number of hours per week. Each week hours is generated based on a normal distribution centered on this value.
 - `average_rolling_week_hours`: The desired average number of hours per week over a rolling period of weeks. In some state you cannot work more than X hours a week in average over Y consecutive weeks.
 - `tracking_rolling_weeks`[optional, default=1]: The number of weeks to consider for the rolling average. If set to default, the the constraint is ignored and the `average_rolling_week_hours` is set to `max_week_hours`.
-- `max_yearly_overtime`: The maximum number of hours of overtime per year. It's computed as the difference between the minimum week hours with respect to the holidays and the actual total of working hours.
+- `max_yearly_overtime`: The maximum number of hours of overtime per year. The overtime is computed as the difference between the minimum week hours with respect to the holidays and the actual total of working hours.
 - `yearly_overtime_variance`: The variance of the number of hours of overtime per year (to introduce some randomness).
 - `number_working_days`[optional, default=5]: The number of working days per week.
 - `project_names`: The list of project names.
