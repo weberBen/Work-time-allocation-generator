@@ -18,7 +18,7 @@ Then obtain an excel file with a table of work hours for each task for each week
 > You can find the legal constraints for France [here](https://www.economie.gouv.fr/entreprises/heures-supplementaires-salaries-prive).
 
 See all the options to match your legal constraints like matching a maximum average week hours over multiple consecutive weeks,
-or a maximum number of overtime hour in the whole year.
+or a maximum number of overtime hours in the whole year.
 
 ## Usage
 
