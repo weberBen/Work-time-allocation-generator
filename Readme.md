@@ -13,7 +13,12 @@ Then obtain an excel file with a table of work hours for each task for each week
 
 ![output example](./assets/output_illustration.png)
 
-> The final weeks' working hours may be lower than the specified minimum weekly hours due to holidays that reduce the total workable hours. In many countries, there is a legal maximum number of working hours per day, which prevents compensating for the holiday hours within the same week. You can find the legal constraints for France [here](https://www.economie.gouv.fr/entreprises/heures-supplementaires-salaries-prive).
+> The final weeks' working hours may be lower than the specified minimum weekly hours due to holidays that reduce the total workable hours.
+> In many countries, there is a legal maximum number of working hours per day, which prevents compensating for the holiday hours within the same week.
+> You can find the legal constraints for France [here](https://www.economie.gouv.fr/entreprises/heures-supplementaires-salaries-prive).
+
+See all the options to match your legal constraints like matching a maximum average week hours over multiple consecutive weeks,
+or a maximum number of overtime hour in the whole year.
 
 ## Usage
 
@@ -37,9 +42,9 @@ poetry install
 - `min_week_hours`: The minimum number of hours per week.
 - `max_week_hours`: The maximum number of hours per week.
 - `average_week_hours`: The desired average number of hours per week. Each week hours is generated based on a normal distribution centered on this value.
-- `average_rolling_week_hours`: The desired average number of hours per week over a rolling period of weeks. In some state you cannot work more than X hours in average over Y weeks.
+- `average_rolling_week_hours`: The desired average number of hours per week over a rolling period of weeks. In some state you cannot work more than X hours a week in average over Y consecutive weeks.
 - `tracking_rolling_weeks`[optional, default=1]: The number of weeks to consider for the rolling average. If set to default, the the constraint is ignored and the `average_rolling_week_hours` is set to `max_week_hours`.
-- `max_yearly_overtime`: The maximum number of hours of overtime per year.
+- `max_yearly_overtime`: The maximum number of hours of overtime per year. It's computed as the difference between the minimum week hours with respect to the holidays and the actual total of working hours.
 - `yearly_overtime_variance`: The variance of the number of hours of overtime per year (to introduce some randomness).
 - `number_working_days`[optional, default=5]: The number of working days per week.
 - `project_names`: The list of project names.
