@@ -46,8 +46,8 @@ poetry install
 - `start_date`: The start date of the allocation period.
 - `end_date`: The end date of the allocation period. Note that 30/12 and 31/12 are the first week of the next year, thus stop it at 28/12.
 - `project_distribution`: The distribution of hours across tasks (must sum to 1) and same length as `project_names`.
-- `working_days`[optional, default=5]: The list of working days per week.
-- `date_format`[optional, default="%d/%m"]: The format of the date.
+- `working_days`[optional, default=monday to friday]: The list of working days per week that help to filter holidays not relevant for a specific week. You can also specify an empty array, in that case there will be no defined working day and all holiday will be taken into account (even holiday on a sunday will impact the workable hours in that week).
+- `date_format`[optional, default="dd/mm"]: The format of the date.
 - `holidays`: The list of holidays, leaves, ... in format without the year. Concatenate `=m` to make this holiday as half day (for example `30/10=m`).
 - `csv` : CSV export config.
   - `translations` : Text cell translations.
@@ -62,7 +62,7 @@ poetry install
 - First the script generate a random allocation using a normal distribution of hours for each week taking into account the holidays and the working days.
 - It then iterate over a sliding window of weeks of the size of `tracking_rolling_weeks` and adjust the hours to meet the average weekly hours constraint b y scaling down the weeks' hours and it also ensure that each week hours meet the minimum hours requirement.
 - Then for each week in the sliding window, it distribute the hours across tasks using a dirichlet distribution.
-- Then it round the hours to the nearest integer and ensure compliance with the requirements by adding or substracting integer amount of hours.
+- Then it round the hours to the nearest integer and ensure compliance with the requirements by adding or subtracting integer amount of hours.
 - Then it check that the total yearly hours do not exceed the maximum yearly hours and adjust the hours to meet this constraint.
 
 ## Parameters
