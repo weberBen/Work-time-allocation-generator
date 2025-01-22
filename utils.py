@@ -131,8 +131,6 @@ def allocate_hours(
     for start_week in range(0, len(weeks), tracking_rolling_weeks):
         end_week = min(start_week + tracking_rolling_weeks, len(weeks))
         rolling_weeks = weeks[start_week:end_week]
-
-        print("Processing rolling weeks", start_week+1, end_week)
         
         # Calculate total workable hours for this rolling window
         total_rolling_hours = sum(reduced_workable_hours[w] for w in rolling_weeks)
@@ -277,7 +275,7 @@ def verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_h
         end_week = min(start_week + tracking_rolling_weeks, len(weeks))
         rolling_window = weekly_totals[start_week:end_week]
 
-        print("Processing rolling weeks", start_week+1, end_week)
+        print("Checking rolling weeks", start_week+1, end_week)
 
         rolling_avg = rolling_window.mean()
         if rolling_avg > average_rolling_week_hours:

@@ -121,15 +121,15 @@ if __name__ == "__main__":
             number_working_days=number_working_days, dirichlet_factor=10, start_week=start_week, end_week=end_week
         )
 
-    print("Constraints validation...")
+    print("\n", "Constraints validation...")
 
     valid = verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_hours, max_week_hours, 
                                     average_rolling_week_hours, tracking_rolling_weeks,
                                     average_week_hours, max_yearly_overtime, yearly_overtime_variance, number_working_days=number_working_days,
                                     start_week=start_week, end_week=end_week)
-    print("Constraints validation result:", valid)
+    print("\n", "Constraints validation result:", valid)
 
-    assert valid, "Allocation is not valid"
+    assert valid, "Allocation constraints validation failed. Try to generate a new file"
 
     filename = to_excel_file(allocation_df, project_names,
                 title=csv_title.replace("%year%", f"{year}"),
@@ -140,4 +140,4 @@ if __name__ == "__main__":
                 display_all_weeks=csv_display_all_weeks
             )
 
-    print(f"File saved to {filename}")
+    print(f"-> File saved to {filename}")
