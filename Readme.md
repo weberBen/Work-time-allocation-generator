@@ -6,8 +6,8 @@ For example, define :
 - the tasks : `Meeting`, `Research`, `Coding`, `Documentation`
 - the associated distribution : `[0.1, 0.5, 0.2, 0.2]`.
 - the legal working hours constraints applicable to your company : work hours per week between `37` and `48` with a desired week average of `45` hours. 
-- Define the period : from `01/01` (week 1) to `30/01` (week 5) in format `dd/mm`.
-- Define your holidays, leaves, ... : `01/01` all day and `02/01` half day.
+- the period : from `01/01` (week 1) to `30/01` (week 5) in format `dd/mm`.
+- the holidays, leaves, ... : `01/01` all day and `02/01` half day.
 
 And obtain an excel file with a table of work hours for each task for each week, with dynamic total formula and predefine style, that seems plausible and with enough diversity to generate multiple reports like this one :
 
