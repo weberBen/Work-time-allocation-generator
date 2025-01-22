@@ -9,7 +9,7 @@ For example, define :
 - the period : from `01/01` (week 1) to `30/01` (week 5) in format `dd/mm`.
 - the holidays, leaves, ... : `01/01` all day and `02/01` half day.
 
-And obtain an excel file with a table of work hours for each task for each week, with dynamic total formula and predefine style, that seems plausible and with enough diversity to generate multiple reports like this one :
+Then obtain an excel file with a table of work hours for each task for each week, with dynamic total formula and predefine style, that seems plausible and with enough diversity to generate multiple reports like this one :
 
 ![output example](./assets/output_illustration.png)
 
