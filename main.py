@@ -24,6 +24,10 @@ if __name__ == "__main__":
     yearly_overtime_variance = config.get('yearly_overtime_variance')
     number_working_days = config.get('number_working_days', 5)
     project_distribution = config.get('project_distribution')
+    dirichlet_factor = config.get('dirichlet_factor', 10)
+    dirichlet_noise = config.get('project_distribution_noise', None)
+    dirichlet_noise_type = config.get('project_distribution_noise_type', 'uniform')
+    dirichlet_noise_operand = config.get('project_distribution_noise_operand', 'add')
     project_names = config.get('project_names')
     date_format = config.get('date_format', '%d/%m')
     start_date = config.get('start_date', '01/01')
@@ -63,6 +67,7 @@ if __name__ == "__main__":
     assert start_week <= end_week, f"Start week {start_week} must be less than end week {end_week}"
     assert start_week > 0, f"Start week {start_week} must be greater than 0"
     assert end_week <= weeks_for_year(year), f"End week {end_week} must be less than the number of weeks in the year {weeks_for_year(year)}"
+    assert dirichlet_noise >= 0 or dirichlet_noise is None, f"Project distribution noise should be null or greater than 0"
 
     full_holidays = set([h.replace('=f', '') for h in config['holidays'] if ('=' not in h) or h.endswith('=f')])
     mid_holidays = set([h.replace('=m', '') for h in config['holidays'] if h.endswith('=m')]) - full_holidays
@@ -115,17 +120,21 @@ if __name__ == "__main__":
 
     print("Start week:", start_week, "End week:", end_week)
 
-    allocation_df = allocate_hours(
-            year, holiday_dates, min_week_hours, max_week_hours, average_week_hours,
+    allocation_df = allocate_hours(year, holiday_dates, min_week_hours, max_week_hours, average_week_hours,
             average_rolling_week_hours, tracking_rolling_weeks, project_distribution, max_yearly_overtime, yearly_overtime_variance,
-            number_working_days=number_working_days, dirichlet_factor=10, start_week=start_week, end_week=end_week
+            number_working_days=number_working_days,
+            dirichlet_factor=dirichlet_factor, dirichlet_noise=dirichlet_noise, dirichlet_noise_type=dirichlet_noise_type,
+            dirichlet_noise_operand=dirichlet_noise_operand,
+            start_week=start_week, end_week=end_week
         )
-
+    
     print("\n", "Constraints validation...")
 
     valid = verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_hours, max_week_hours, 
                                     average_rolling_week_hours, tracking_rolling_weeks,
-                                    average_week_hours, max_yearly_overtime, yearly_overtime_variance, number_working_days=number_working_days,
+                                    average_week_hours, max_yearly_overtime, yearly_overtime_variance,
+                                    project_distribution, dirichlet_factor, dirichlet_noise,
+                                    number_working_days=number_working_days,
                                     start_week=start_week, end_week=end_week)
     print("\n", "Constraints validation result:", valid)
 

@@ -7,6 +7,10 @@ from openpyxl.utils import get_column_letter
 
 #%%
 
+DIRICHLET_EMPTY_VALUE = 1e-6
+
+#%%
+
 def parse_holiday_dates(year, dates, format="%d/%m"):
     if isinstance(dates, str):
         dates = [dates]
@@ -76,11 +80,88 @@ def adjust_hours_to_target(hours, desired_total):
     
     return adjusted_hours
 
-#%% 
+#%%
+
+def generate_hours_distribution(dirichlet_params, noise=None, noise_type="uniform", noise_operand="add"):
+    """
+    Generate a distribution with customizable noise types.
+    """
+    # Base distribution
+    dist_sample = np.random.dirichlet(dirichlet_params)
+    if noise is None or noise == 0:
+        return dist_sample
+    
+    # Generate noise based on the specified type
+    if noise_type == "uniform":
+        noise_factors = np.random.uniform(0, noise, size=dist_sample.shape)
+    elif noise_type == "gaussian":
+        noise_factors = np.random.normal(loc=0, scale=noise, size=dist_sample.shape)
+    elif noise_type == "exponential":
+        noise_factors = np.random.exponential(scale=noise, size=dist_sample.shape)
+    elif noise_type == "lognormal":
+        noise_factors = np.random.lognormal(mean=0, sigma=noise, size=dist_sample.shape)
+    elif noise_type == "random":
+        noise_factors = np.random.random(dist_sample.shape) * noise
+    else:
+        raise ValueError(f"Unsupported noise type: {noise_type}")
+
+    noise_factors = np.abs(noise_factors)
+
+    # Apply noise
+    if noise_operand == "add":
+        altered_dist = dist_sample + noise_factors
+    elif noise_operand == "mult":
+        altered_dist = dist_sample * (1 + noise_factors)
+    else:
+        raise ValueError(f"Unsupported noise operand: {noise_type}")
+    
+    # Preserve zero values from the original
+    altered_dist[dist_sample == 0] = 0
+    # Renormalize
+    altered_dist = altered_dist / altered_dist.sum()
+
+    return altered_dist
+
+        
+#%%
+
+def infer_project_distribution(allocation_df):
+    """
+    Infer the Dirichlet parameters used to generate the project hour distributions.
+    
+    Args:
+        allocation_df (pd.DataFrame): DataFrame where columns are weeks and rows are projects
+        
+    Returns:
+        tuple: (base_distribution, dirichlet_params, estimated_noise)
+            - base_distribution: The underlying project distribution proportions
+            - dirichlet_params: The estimated Dirichlet parameters
+            - estimated_noise: Estimated noise level used in the distribution
+    """
+    # Convert hours to proportions for each week
+    weekly_totals = allocation_df.sum()
+    proportions = allocation_df.div(weekly_totals, axis=1)
+    
+    # Calculate the mean proportion for each project (base distribution)
+    base_distribution = proportions.mean(axis=1)
+    
+    # Calculate the standard deviation of proportions to estimate noise
+    prop_std = proportions.std(axis=1)
+    estimated_noise = prop_std.mean()
+    
+    # Reconstruct the Dirichlet parameters
+    dirichlet_params = base_distribution
+    dirichlet_params[dirichlet_params == 0] = DIRICHLET_EMPTY_VALUE  # Match the original generation logic
+    
+    return dirichlet_params.values, estimated_noise
+
+#%%
+
 def allocate_hours(
     year, holiday_dates, min_week_hours, max_week_hours, average_week_hours,
     average_rolling_week_hours, tracking_rolling_weeks, project_distribution, max_yearly_overtime, yearly_overtime_variance,
-    number_working_days = 5, dirichlet_factor=10, start_week=1, end_week=52, normal_distribution_factor=None
+    number_working_days = 5, dirichlet_factor=10, dirichlet_noise=None, dirichlet_noise_type="uniform", dirichlet_noise_operand="add",
+    start_week=1, end_week=52, normal_distribution_factor=None
 ):
     """
     Allocate hours to projects while respecting constraints and variations.
@@ -161,9 +242,14 @@ def allocate_hours(
             # Use Dirichlet distribution to randomly allocate hours while maintaining proportions
 
             dirichlet_params = project_distribution * dirichlet_factor
-            dirichlet_params[dirichlet_params == 0] = 1e-6
+            dirichlet_params[dirichlet_params == 0] = DIRICHLET_EMPTY_VALUE
 
-            project_hours = np.random.dirichlet(dirichlet_params) * week_hours
+            project_hours = generate_hours_distribution(dirichlet_params,
+                                                        noise=dirichlet_noise,
+                                                        noise_type=dirichlet_noise_type,
+                                                        noise_operand=dirichlet_noise_operand,
+                                                    )
+            project_hours *= week_hours
             project_hours = np.round(project_hours, 0)
             
             project_hours = adjust_hours_to_target(project_hours, week_hours)
@@ -225,7 +311,9 @@ def allocate_hours(
 
 def verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_hours, max_week_hours, 
                                 average_rolling_week_hours, tracking_rolling_weeks,
-                                average_week_hours, max_yearly_overtime, yearly_overtime_variance, number_working_days=5, start_week=1, end_week=52):
+                                average_week_hours, max_yearly_overtime, yearly_overtime_variance,
+                                project_distribution, dirichlet_factor, dirichlet_noise,
+                                number_working_days=5, start_week=1, end_week=52):
     """
     Verify that the allocation meets all constraints:
     - Weekly hours within min/max bounds
@@ -287,16 +375,20 @@ def verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_h
     # Check overall average
     total_avg = weekly_totals.mean()
     total_med = weekly_totals.median()
+    print("")
     print(f"Overall week hours average :", total_avg, "Target average :", average_week_hours)
     print(f"Overall week hours median :", total_med, "Target average :", average_week_hours)
+    
     # Calculate quartiles
     q1, q3 = np.percentile(weekly_totals, [25, 75])
+    print("")
     print(f"First quartile (Q1) of week hours:", q1)
     print(f"Third quartile (Q3) of week hours:", q3)
     print(f"Interquartile range (IQR):", q3 - q1)
 
     
     yearly_overtime_hours = weekly_totals.sum() - sum(min_weeks)
+    print("")
     print(f"Yearly overtime hours :", yearly_overtime_hours, "Max allowed :", max_yearly_overtime, "Variance :", yearly_overtime_variance)
 
     if yearly_overtime_hours < 0:
@@ -306,6 +398,18 @@ def verify_allocation_constraints(allocation_df, year, holiday_dates, min_week_h
     if yearly_overtime_hours > max_yearly_overtime:
       print("Exceeding yearly hours", yearly_overtime_hours - max_yearly_overtime)
       return False
+    
+    estimated_project_distribution, estimated_noise = infer_project_distribution(allocation_df)
+    project_distribution_diff = np.abs(estimated_project_distribution - project_distribution)
+    project_distribution_mae = np.mean(project_distribution_diff)
+    
+    print("")
+    print("Real project distribution:", project_distribution)
+    print("Estimated project distribution:", estimated_project_distribution)
+    print("Project distribution diff:", project_distribution_mae)
+
+    if project_distribution_mae > 0.1:
+      print(f"WARNING: Project distribution from data is not close enough to the target distribution (diff: {project_distribution_mae})")
 
     return True
 

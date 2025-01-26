@@ -18,6 +18,9 @@
   "start_date": "01/01",
   "end_date": "30/01",
   "project_distribution": [0.1, 0.5, 0.2, 0.2],
+  "project_distribution_noise": 0.1,
+  "project_distribution_noise_type": "random",
+  "project_distribution_noise_operand": "add",
   "working_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
   "csv": {
     "translations": {
